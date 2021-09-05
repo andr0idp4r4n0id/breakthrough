@@ -96,10 +96,17 @@ func CheckContains(url_t string) bool {
 	}
 }
 
+func ExtractHostToPrint(url_t string) string {
+	uri, _ := url.Parse(url_t)
+	return uri.Host
+}
+
 func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bool) {
 	defer wg.Done()
 	<-sem
 	payloads := url.Values{}
+	fmt.Print("\033[u\033[K")
+	fmt.Printf("HOST: %s ", ExtractHostToPrint(url_t))
 	var new_url string
 	for _, sql_payload := range sql_payloads {
 		payloads.Set(name, sql_payload)
@@ -115,7 +122,7 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 			continue
 		} else {
 			if time.Since(start).Seconds() > 240 {
-				fmt.Printf("Possibly vulnerable to SQLi ---> %s\n%s\n%s", url_t, name, sql_payload)
+				fmt.Printf("Possibly vulnerable to SQLi ---> %s=%s\n", name, sql_payload)
 			}
 		}
 	}
@@ -126,6 +133,7 @@ func main() {
 	var wg sync.WaitGroup
 	conc := flag.Int("concurrency", 10, "concurrency level")
 	sem := make(chan bool, *conc)
+	fmt.Print("\033[s")
 	for reader.Scan() {
 		url_t := reader.Text()
 		parsedUri, _ := url.Parse(url_t)
