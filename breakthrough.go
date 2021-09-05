@@ -98,7 +98,7 @@ func CheckContains(url_t string) bool {
 
 func ExtractHostToPrint(url_t string) string {
 	uri, _ := url.Parse(url_t)
-	return uri.Host
+	return uri.Host+uri.Path
 }
 
 func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bool) {
