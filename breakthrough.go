@@ -115,7 +115,7 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 			continue
 		} else {
 			if time.Since(start).Seconds() > 120 {
-				fmt.Printf("Possibly vulnerable to SQLi ---> %s\n", new_url)
+				fmt.Printf("Possibly vulnerable to SQLi ---> %s\n%s\n%s", url_t, name, sql_payload)
 			}
 		}
 	}
