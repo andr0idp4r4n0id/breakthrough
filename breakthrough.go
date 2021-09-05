@@ -88,17 +88,12 @@ var sql_payloads = []string{
 
 func CheckContains(url_t string) bool {
 	re := regexp.MustCompile(`\?\w+=.+`)
-	matched := re.MatchString(url_t)
-	if matched {
-		return true
-	} else {
-		return false
-	}
+	return re.MatchString(url_t)
 }
 
 func ExtractHostToPrint(url_t string) string {
 	uri, _ := url.Parse(url_t)
-	return uri.Host+uri.Path
+	return uri.Host + uri.Path
 }
 
 func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bool) {
@@ -120,10 +115,9 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 		_, err := http.Get(new_url)
 		if err != nil {
 			continue
-		} else {
-			if time.Since(start).Seconds() > 240 {
-				fmt.Printf("\nPossibly vulnerable to SQLi ---> %s=%s\n", name, sql_payload)
-			}
+		}
+		if time.Since(start).Seconds() > 240 {
+			fmt.Printf("\nPossibly vulnerable to SQLi ---> %s=%s\n", name, sql_payload)
 		}
 	}
 
