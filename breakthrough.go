@@ -100,8 +100,6 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 	defer wg.Done()
 	<-sem
 	payloads := url.Values{}
-	fmt.Print("\033[u\033[K")
-	fmt.Printf("HOST: %s ", ExtractHostToPrint(url_t))
 	var new_url string
 	for _, sql_payload := range sql_payloads {
 		payloads.Set(name, sql_payload)
@@ -117,7 +115,7 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 			continue
 		}
 		if time.Since(start).Seconds() > 240 {
-			fmt.Printf("\nPossibly vulnerable to SQLi ---> %s=%s\n", name, sql_payload)
+			fmt.Printf("\nPossibly vulnerable to SQLi ---> %s?%s=%s\n", ExtractHostToPrint(url_t), name, sql_payload)
 		}
 	}
 
@@ -143,3 +141,4 @@ func main() {
 	}
 	wg.Wait()
 }
+
