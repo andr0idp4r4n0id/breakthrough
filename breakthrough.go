@@ -126,7 +126,7 @@ func TestOneByOneSQLi(url_t string, name string, sem chan bool) {
 			new_url = fmt.Sprintf("%s?%s", url_t, encoded_payloads)
 		}
 		start := time.Now()
-		if SendGetRequestToNewUrl(new_url) == nil {
+		if SendGetRequestToNewUrl(new_url) != nil {
 			return
 		}
 		if math.Round(time.Since(start).Seconds()) > 120 {
@@ -139,6 +139,7 @@ func main() {
 	reader := bufio.NewScanner(os.Stdin)
 	var wg sync.WaitGroup
 	conc := flag.Int("concurrency", 10, "concurrency level")
+	flag.Parse()
 	sem := make(chan bool, *conc)
 	for reader.Scan() {
 		url_t := reader.Text()
