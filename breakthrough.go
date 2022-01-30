@@ -113,7 +113,7 @@ func SendGetRequestToNewUrl(new_url string) error {
 	return err
 }
 
-func TestOneByOneSQLi(url_t string, name string, sem chan bool) {
+func TestOneByOneSQLi(url_t string, name string) {
 	payloads := url.Values{}
 	var new_url string
 	for _, sql_payload := range sql_payloads {
@@ -140,20 +140,20 @@ func main() {
 	var wg sync.WaitGroup
 	conc := flag.Int("concurrency", 10, "concurrency level")
 	flag.Parse()
-	sem := make(chan bool, *conc)
-	for reader.Scan() {
-		url_t := reader.Text()
-		parsedUri, _ := url.Parse(url_t)
-		query, _ := url.ParseQuery(parsedUri.RawQuery)
-		for name := range query {
-			wg.Add(1)
-			sem <- true
-			go func() {
-				TestOneByOneSQLi(url_t, name, sem)
-				<-sem
-			}()
-			wg.Done()
+	for i := 0; i < *conc; i++ {
+		for reader.Scan() {
+			url_t := reader.Text()
+			parsedUri, _ := url.Parse(url_t)
+			query, _ := url.ParseQuery(parsedUri.RawQuery)
+			for name := range query {
+				wg.Add(1)
+				name_copy := name
+				go func() {
+					TestOneByOneSQLi(url_t, name_copy)
+					wg.Done()
+				}()
+			}
 		}
+		wg.Wait()
 	}
-	wg.Wait()
 }
